@@ -1,0 +1,14 @@
+{
+  "name": "deno-proxy",
+  "version": "1.0.0",
+  "exports": "./src/main.ts",
+  "tasks": {
+    "dev": "deno run --allow-env --allow-net --allow-read src/main.ts",
+    "start": "deno run --allow-env --allow-net --allow-read src/main.ts",
+    "seed": "deno run --allow-env --allow-net --allow-read --allow-write src/seed.ts"
+  },
+  "imports": {
+    "hono": "jsr:@hono/hono@^4.6.0",
+    "@std/dotenv": "jsr:@std/dotenv@^0.225.2"
+  }
+}
