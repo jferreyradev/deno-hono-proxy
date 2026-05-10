@@ -1,32 +1,29 @@
 import { Hono } from "hono";
-import { createUser, createBackend, getUser } from "../kv-client.ts";
-import { hashPassword } from "../auth/hash.ts";
+import { createBackend } from "../kv-client.ts";
 import { adminAuth } from "../middleware/auth.ts";
+import { config } from "../config.ts";
+
+function encryptToken(token: string, encryptionKey: string): string {
+  const tokenBytes = new TextEncoder().encode(token);
+  const keyBytes = new TextEncoder().encode(encryptionKey);
+  const xorData = new Uint8Array(tokenBytes.length);
+  for (let i = 0; i < tokenBytes.length; i++) {
+    xorData[i] = tokenBytes[i] ^ keyBytes[i % keyBytes.length];
+  }
+  return btoa(String.fromCharCode(...xorData));
+}
 
 const admin = new Hono();
 
 admin.use("*", adminAuth);
-
-admin.post("/users", async (c) => {
-  const { username, password, role } = await c.req.json();
-  if (!username || !password) {
-    return c.json({ error: "Bad Request", message: "username and password required" }, 400);
-  }
-  const existing = await getUser(username);
-  if (existing) {
-    return c.json({ error: "Conflict", message: "User already exists" }, 409);
-  }
-  const { hash, salt } = await hashPassword(password);
-  await createUser(username, hash, salt, role || "user");
-  return c.json({ message: "User created", username }, 201);
-});
 
 admin.post("/backends", async (c) => {
   const { name, url, token, prefix } = await c.req.json();
   if (!name || !url || !token || !prefix) {
     return c.json({ error: "Bad Request", message: "name, url, token, prefix required" }, 400);
   }
-  await createBackend({ name, url, token, prefix });
+  const encryptedToken = encryptToken(token, config.encryptionKey);
+  await createBackend({ name, url, token: encryptedToken, prefix });
   return c.json({ message: "Backend registered", name }, 201);
 });
 

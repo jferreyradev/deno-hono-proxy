@@ -21,21 +21,6 @@ async function kvRequest(method: string, path: string, body?: unknown) {
   return res.json();
 }
 
-async function getUser(username: string) {
-  try {
-    return await kvRequest("GET", `/collections/users/${username}`);
-  } catch {
-    return null;
-  }
-}
-
-async function createUser(username: string, passwordHash: string, salt: string, role = "user") {
-  await kvRequest("POST", "/collections/users", {
-    key: username,
-    data: { username, passwordHash, salt, createdAt: new Date().toISOString(), role },
-  });
-}
-
 async function getBackendByKey(key: string) {
   try {
     return await kvRequest("GET", `/collections/backend/${key}`);
@@ -48,18 +33,6 @@ async function createBackend(data: { name: string; url: string; token: string; p
   await kvRequest("POST", "/collections/backend", { key: data.name, data });
 }
 
-async function hashPassword(password: string): Promise<{ hash: string; salt: string }> {
-  const saltBytes = crypto.getRandomValues(new Uint8Array(16));
-  const salt = btoa(String.fromCharCode(...saltBytes));
-  const key = await crypto.subtle.importKey("raw", new TextEncoder().encode(password + salt), "PBKDF2", false, ["deriveBits"]);
-  const derived = await crypto.subtle.deriveBits(
-    { name: "PBKDF2", salt: new TextEncoder().encode("deno-proxy-salt"), iterations: 100000, hash: "SHA-256" },
-    key,
-    256
-  );
-  return { hash: btoa(String.fromCharCode(...new Uint8Array(derived))), salt };
-}
-
 async function ensureSecret(name: string, current: string | undefined): Promise<string> {
   if (current && current.length > 10) return current;
   const secret = generateSecret();
@@ -67,11 +40,11 @@ async function ensureSecret(name: string, current: string | undefined): Promise<
   return secret;
 }
 
-async function writeEnvFile(jwtSecret: string, adminApiKey: string) {
+async function writeEnvFile(proxyToken: string, adminApiKey: string) {
   const envContent = [
     `REGISTRY_URL=${registryUrl}`,
     `API_KEY=${apiKey}`,
-    `JWT_SECRET=${jwtSecret}`,
+    `PROXY_TOKEN=${proxyToken}`,
     `ADMIN_API_KEY=${adminApiKey}`,
     `PORT=${port}`,
     "",
@@ -82,17 +55,6 @@ async function writeEnvFile(jwtSecret: string, adminApiKey: string) {
   } catch {
     console.log("! Could not write .env file (may already exist or no permissions)");
   }
-}
-
-async function ensureAdminUser() {
-  const existing = await getUser("admin");
-  if (existing) {
-    console.log("✓ Admin user already exists");
-    return;
-  }
-  const { hash, salt } = await hashPassword("admin123");
-  await createUser("admin", hash, salt, "admin");
-  console.log("✓ Admin user created: admin / admin123");
 }
 
 async function ensureBackends() {
@@ -113,16 +75,15 @@ async function ensureBackends() {
 
 console.log("=== Deno Proxy Seed ===\n");
 
-const jwtSecret = await ensureSecret("JWT_SECRET", Deno.env.get("JWT_SECRET"));
+const proxyToken = await ensureSecret("PROXY_TOKEN", Deno.env.get("PROXY_TOKEN"));
 const adminApiKey = await ensureSecret("ADMIN_API_KEY", Deno.env.get("ADMIN_API_KEY"));
 
-await writeEnvFile(jwtSecret, adminApiKey);
-await ensureAdminUser();
+await writeEnvFile(proxyToken, adminApiKey);
 await ensureBackends();
 
 console.log("\n=== Deno Deploy Setup ===");
 console.log("Run these commands to configure Deno Deploy:");
-console.log(`  deployctl secret add JWT_SECRET "${jwtSecret}"`);
+console.log(`  deployctl secret add PROXY_TOKEN "${proxyToken}"`);
 console.log(`  deployctl secret add ADMIN_API_KEY "${adminApiKey}"`);
 console.log("\nOr configure manually at: https://dash.deno.com/projects/YOUR_PROJECT/settings");
 console.log("\n=== Done ===");

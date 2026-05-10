@@ -15,14 +15,6 @@ interface BackendData {
   prefix: string;
 }
 
-interface UserData {
-  username: string;
-  passwordHash: string;
-  salt: string;
-  createdAt: string;
-  role: string;
-}
-
 async function kvRequest(method: string, path: string, body?: unknown) {
   const url = `${config.registryUrl}${path}`;
   const res = await fetch(url, {
@@ -55,22 +47,6 @@ export async function getBackendByKey(key: string): Promise<KvItem<BackendData> 
   try {
     const res = await kvRequest("GET", `/collections/backend/${key}`);
     return res as KvItem<BackendData>;
-  } catch {
-    return null;
-  }
-}
-
-export async function createUser(username: string, passwordHash: string, salt: string, role = "user"): Promise<void> {
-  await kvRequest("POST", "/collections/users", {
-    key: username,
-    data: { username, passwordHash, salt, createdAt: new Date().toISOString(), role },
-  });
-}
-
-export async function getUser(username: string): Promise<KvItem<UserData> | null> {
-  try {
-    const res = await kvRequest("GET", `/collections/users/${username}`);
-    return res as KvItem<UserData>;
   } catch {
     return null;
   }

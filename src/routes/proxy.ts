@@ -1,10 +1,21 @@
 import { Hono } from "hono";
-import { jwtAuth } from "../middleware/auth.ts";
+import { bearerAuth } from "../middleware/auth.ts";
 import { getBackendByPrefix } from "../kv-client.ts";
+import { config } from "../config.ts";
 
 const proxy = new Hono();
 
-proxy.use("*", jwtAuth);
+proxy.use("*", bearerAuth);
+
+function decryptToken(encryptedToken: string, encryptionKey: string): string {
+  const encryptedBytes = Uint8Array.from(atob(encryptedToken), (c) => c.charCodeAt(0));
+  const keyBytes = new TextEncoder().encode(encryptionKey);
+  const decrypted = new Uint8Array(encryptedBytes.length);
+  for (let i = 0; i < encryptedBytes.length; i++) {
+    decrypted[i] = encryptedBytes[i] ^ keyBytes[i % keyBytes.length];
+  }
+  return new TextDecoder().decode(decrypted);
+}
 
 proxy.all("/*", async (c) => {
   const path = new URL(c.req.url).pathname;
@@ -21,7 +32,8 @@ proxy.all("/*", async (c) => {
 
   try {
     const headers = new Headers(c.req.raw.headers);
-    headers.set("Authorization", `Bearer ${backend.token}`);
+    const plainToken = decryptToken(backend.token, config.encryptionKey);
+    headers.set("Authorization", `Bearer ${plainToken}`);
     headers.set("X-Forwarded-For", c.req.header("X-Forwarded-For") || c.req.header("Host") || "");
     headers.delete("Host");
 

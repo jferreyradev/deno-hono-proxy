@@ -1,10 +1,10 @@
 import { Hono } from "hono";
 import { getAllBackends, getBackendByKey } from "../kv-client.ts";
-import { jwtAuth } from "../middleware/auth.ts";
+import { bearerAuth } from "../middleware/auth.ts";
 
 const backends = new Hono();
 
-backends.use("*", jwtAuth);
+backends.use("*", bearerAuth);
 
 backends.get("/", async (c) => {
   const items = await getAllBackends();
