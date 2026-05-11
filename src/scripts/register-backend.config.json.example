@@ -1,0 +1,24 @@
+{
+  "name": "desa",
+  "backend-url": "http://181.87.25.165:3004",
+  "backend-token": "desarrollotoken",
+  "backend-port": 3004,
+  "prefix": "/desa",
+  "registry-url": "https://kv-storage-api.jferreyradev.deno.net",
+  "api-key": "pi3_141516",
+  "encryption-key": "litos123",
+  "use-public-ip": false,
+  "daemon": false,
+  "comments": {
+    "name": "Nombre único del backend",
+    "backend-url": "URL completa del backend (usar si no usa --use-public-ip)",
+    "backend-token": "Token secreto para autenticar contra el backend",
+    "backend-port": "Puerto del backend (requerido si use-public-ip es true)",
+    "prefix": "Prefix para el enrutamiento, ej: /miapi, /desa",
+    "registry-url": "URL del KV Storage donde guardar la configuración",
+    "api-key": "API key para autenticar contra el KV Storage",
+    "encryption-key": "Clave para encriptar el token del backend",
+    "use-public-ip": "Auto-detectar IP pública (útil si está detrás de NAT)",
+    "daemon": "Modo daemon: re-registrar cada 30 minutos"
+  }
+}
