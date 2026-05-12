@@ -1,12 +1,21 @@
 import { Hono } from "hono";
+import { cors } from "hono/cors";
 import { logger } from "./middleware/logger.ts";
 import { admin } from "./routes/admin.ts";
 import { backends } from "./routes/backends.ts";
 import { proxy } from "./routes/proxy.ts";
+import { config } from "./config.ts";
 
 const app = new Hono();
 
 app.use("*", logger);
+app.use("*", cors({
+  origin: config.allowedOrigins,
+  allowMethods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+  allowHeaders: ["Content-Type", "Authorization", "X-Admin-Token"],
+  exposeHeaders: ["Content-Length"],
+  maxAge: 86400,
+}));
 
 app.get("/health", (c) => c.json({ status: "ok" }));
 

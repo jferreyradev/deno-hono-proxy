@@ -9,4 +9,9 @@ export const config = {
   adminApiKey: Deno.env.get("ADMIN_API_KEY")!,
   encryptionKey: Deno.env.get("ENCRYPTION_KEY")!,
   port: parseInt(Deno.env.get("PORT") || "8000"),
+  allowedOrigins: (() => {
+    const val = Deno.env.get("ALLOWED_ORIGINS");
+    if (!val || val === "*") return "*";
+    return val.split(",").map(s => s.trim());
+  })(),
 };
