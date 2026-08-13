@@ -4,6 +4,15 @@ Scripts utilitarios para registrar y probar backends en el gateway.
 
 ---
 
+## Prerrequisitos de ejecución
+
+- Tener instalado el runtime de **Deno**.
+- Verificar instalación con: `deno --version`
+
+Si no lo tenés instalado, seguí la guía oficial: https://docs.deno.com/runtime/getting_started/installation/
+
+---
+
 ## Archivos
 
 | Archivo | Descripción |
