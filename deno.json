@@ -5,7 +5,10 @@
   "tasks": {
     "dev": "deno run --allow-env --allow-net --allow-read src/main.ts",
     "start": "deno run --allow-env --allow-net --allow-read src/main.ts",
-    "seed": "deno run --allow-env --allow-net --allow-read --allow-write src/seed.ts"
+    "seed": "deno run --allow-env --allow-net --allow-read --allow-write src/seed.ts",
+    "register": "deno run --allow-net --allow-env --allow-read src/scripts/register-backend.ts",
+    "compile": "deno compile --allow-net --allow-env --allow-read --output register-backend src/scripts/register-backend.ts",
+    "compile:all": "deno compile --allow-net --allow-env --allow-read --target x86_64-pc-windows-msvc --output register-backend-windows.exe src/scripts/register-backend.ts && deno compile --allow-net --allow-env --allow-read --target x86_64-unknown-linux-gnu --output register-backend-linux src/scripts/register-backend.ts && deno compile --allow-net --allow-env --allow-read --target x86_64-apple-darwin --output register-backend-macos src/scripts/register-backend.ts && deno compile --allow-net --allow-env --allow-read --target aarch64-apple-darwin --output register-backend-macos-arm src/scripts/register-backend.ts"
   },
   "imports": {
     "hono": "jsr:@hono/hono@^4.6.0",

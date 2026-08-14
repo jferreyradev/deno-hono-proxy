@@ -1,2 +1,7 @@
 .env
 deno.lock
+
+# Compiled executables
+register-backend.exe
+register-backend
+register-backend-*

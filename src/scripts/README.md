@@ -129,6 +129,59 @@ Ver los archivos de ejemplo incluidos:
 
 El script encripta el token del backend antes de guardarlo en el KV Storage usando **Base64 + XOR** con la clave de encriptación indicada. Esto asegura que el token no se almacene en texto plano. La misma clave es necesaria para desencriptarlo al leerlo (ver `kv.ts`).
 
+### Compilar a ejecutable standalone
+
+Podés compilar el script a un ejecutable binario que no requiere tener Deno instalado en el sistema destino.
+
+#### Compilar para tu plataforma actual
+
+```bash
+# Desde la raíz del proyecto
+deno task compile
+```
+
+Esto genera:
+- **Windows**: `register-backend.exe`
+- **Linux/macOS**: `register-backend`
+
+#### Compilar para todas las plataformas (cross-compilation)
+
+```bash
+# Desde la raíz del proyecto
+deno task compile:all
+```
+
+Esto genera ejecutables para:
+- `register-backend-windows.exe` (Windows x64)
+- `register-backend-linux` (Linux x64)
+- `register-backend-macos` (macOS x64 Intel)
+- `register-backend-macos-arm` (macOS ARM64 Apple Silicon)
+
+#### Usar el ejecutable
+
+Una vez compilado, podés distribuir y ejecutar el binario sin necesidad de Deno:
+
+```bash
+# Windows
+.\register-backend.exe --name=mi-api --backend-url=http://localhost:3000 --backend-token=secret --registry-url=https://kv.example.com --api-key=key --encryption-key=secret
+
+# Linux/macOS
+./register-backend --name=mi-api --backend-url=http://localhost:3000 --backend-token=secret --registry-url=https://kv.example.com --api-key=key --encryption-key=secret
+```
+
+El ejecutable soporta todas las opciones CLI, archivos de configuración y variables de entorno documentadas arriba.
+
+#### Distribución
+
+Para distribuir el ejecutable:
+
+1. Compilar para la(s) plataforma(s) objetivo
+2. Copiar el binario a la máquina destino
+3. Darle permisos de ejecución (Linux/macOS): `chmod +x register-backend`
+4. Ejecutar con los parámetros necesarios
+
+**Nota**: En Windows, el ejecutable puede ser detectado por Windows Defender o SmartScreen la primera vez. Esto es normal para ejecutables no firmados. Para distribución pública, considerar firmar el ejecutable con un certificado de código.
+
 ---
 
 ## `kv.ts`
