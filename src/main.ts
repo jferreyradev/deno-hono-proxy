@@ -9,13 +9,33 @@ import { config } from "./config.ts";
 const app = new Hono();
 
 app.use("*", logger);
-app.use("*", cors({
-  origin: config.allowedOrigins,
-  allowMethods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-  allowHeaders: ["Content-Type", "Authorization", "X-Admin-Token"],
-  exposeHeaders: ["Content-Length"],
-  maxAge: 86400,
-}));
+app.use(
+  "*",
+  cors({
+    origin: (origin) => origin || "*",
+    allowMethods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS", "HEAD"],
+    allowHeaders: [
+      "Content-Type",
+      "Authorization",
+      "X-Admin-Token",
+      "X-Admin-Key",
+      "x-admin-key",
+      "x-project-key",
+      "x-project-port",
+      "x-file-name",
+      "x-internal-key",
+      "Cache-Control",
+    ],
+    exposeHeaders: [
+      "Content-Length",
+      "Content-Type",
+      "Content-Disposition",
+      "X-Proxied-By",
+      "X-Backend",
+    ],
+    maxAge: 86400,
+  })
+);
 
 app.get("/health", (c) => c.json({ status: "ok" }));
 
